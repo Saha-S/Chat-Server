@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#ececdf"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.sina.k1.chatserver.MainActivity"
     tools:showIn="@layout/activity_main">
@@ -30,11 +31,10 @@
 
         <Button
             android:id="@+id/btn_client"
+            style="@android:style/Widget.Material.Light.Button.Inset"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="کلاینت"
-            style="@android:style/Widget.Material.Light.Button.Inset"
-            />
+            android:text="کلاینت" />
     </LinearLayout>
 </RelativeLayout>

@@ -192,6 +192,8 @@ public class ActivityServer extends AppCompatActivity {
 
                     @Override
                     public void run() {
+                        infoIp.setVisibility(View.GONE);
+                        infoPort.setVisibility(View.GONE);
                         final LayoutInflater inflater = (LayoutInflater)getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
                         final View child = inflater.inflate(R.layout.item_msg, null, false);
                         TextView msg = (TextView) child.findViewById(R.id.txt_msg);
