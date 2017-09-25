@@ -184,7 +184,7 @@ public class ActivityServer extends AppCompatActivity {
                 final String n = dataInputStream.readUTF();
 
                 connectClient.name = n;
-
+////
               //  msgLog += connectClient.name + " متصل شد@" +
                //         connectClient.socket.getInetAddress() +
              //           ":" + connectClient.socket.getPort() + "\n";
