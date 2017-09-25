@@ -168,10 +168,10 @@ public class ActivityClient extends AppCompatActivity {
                                 public void run() {
                                     //  chatMsg.setText(msgLog);
                                     final LayoutInflater inflater = (LayoutInflater)getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
-                                    final View child = inflater.inflate(R.layout.item_server, null, false);
-                                      TextView txtServer = (TextView) child.findViewById(R.id.txt_cserver);
-                                  //  TextView txtClient = (TextView) child.findViewById(R.id.txt_client);
-                                    txtServer.setText(msgLog);
+                                    final View child = inflater.inflate(R.layout.item_client, null, false);
+                                    //  TextView txtServer = (TextView) child.findViewById(R.id.txt_cserver);
+                                    TextView txtClient = (TextView) child.findViewById(R.id.txt_client);
+                                    txtClient.setText(msgLog);
                                     container.addView(child);
 
 
@@ -187,10 +187,10 @@ public class ActivityClient extends AppCompatActivity {
                                 public void run() {
                                     //  chatMsg.setText(msgLog);
                                     final LayoutInflater inflater = (LayoutInflater) getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
-                                    final View child = inflater.inflate(R.layout.item_client, null, false);
-                                    //  TextView txtServer = (TextView) child.findViewById(R.id.txt_cserver);
-                                    TextView txtClient = (TextView) child.findViewById(R.id.txt_client);
-                                    txtClient.setText(msgLog);
+                                    final View child = inflater.inflate(R.layout.item_server, null, false);
+                                      TextView txtServer = (TextView) child.findViewById(R.id.txt_cserver);
+                                  //  TextView txtClient = (TextView) child.findViewById(R.id.txt_client);
+                                    txtServer.setText(msgLog);
                                     container.addView(child);
 
 

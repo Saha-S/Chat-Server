@@ -6,12 +6,6 @@
     android:orientation="vertical"
     tools:context="com.sina.k1.chatserver.ActivityClient">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="اتصال"
-        android:textStyle="bold" />
-
     <LinearLayout
         android:id="@+id/loginpanel"
         android:layout_width="match_parent"
@@ -56,7 +50,7 @@
             android:id="@+id/disconnect"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Disconnect" />
+            android:text="خروج" />
 
         <ScrollView
             android:layout_width="match_parent"
@@ -83,18 +77,31 @@
                 android:id="@+id/say"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="80"
-                android:hint="نوشتن.." />
+                android:layout_weight="1"
+                android:background="@drawable/edt_frame"
+                android:hint="نوشتن.."
+                android:padding="10dp"
 
+                android:paddingEnd="50dp"
+                android:paddingRight="60dp"
+                android:singleLine="true"
+                android:textColor="#fff"
+                android:textColorHint="#fff"
+                android:textSize="18sp" />
             <ImageButton
                 android:id="@+id/send"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="@drawable/send"
-                android:text="ارسال" />
+                android:layout_marginLeft="-60dp"
+                style="?android:buttonBarButtonStyle"
+                android:paddingBottom="5dp"
+                android:src="@drawable/sendsmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
         </LinearLayout>
 
 
-    </LinearLayout>
+
+
+
+</LinearLayout>
 
 </LinearLayout>
