@@ -28,4 +28,8 @@ dependencies {
     compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha7'
     compile 'com.android.support:design:26.+'
     testCompile 'junit:junit:4.12'
+    compile group: 'javax.persistence', name: 'persistence-api', version: '1.0'
+    compile 'net.the4thdimension:audio-wife:1.0.3'
+
+
 }

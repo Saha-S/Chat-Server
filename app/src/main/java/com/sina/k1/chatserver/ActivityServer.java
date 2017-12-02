@@ -1,27 +1,41 @@
 package com.sina.k1.chatserver;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.media.MediaRecorder;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -40,7 +54,22 @@ public class ActivityServer extends AppCompatActivity {
 
     ServerSocket serverSocket;
     private EditText editTextSay;
-    private LinearLayout container;
+   // private LinearLayout container;
+
+    ToggleButton record;
+    private MediaRecorder myRecorder;
+    private String outputFile = "";
+
+    private View child;
+    private ToggleButton play;
+
+    private List<Message> mMessages = new ArrayList<Message>();
+
+    private RecyclerView mMessagesView;
+    private RecyclerView.Adapter mAdapter;
+    private Handler mTypingHandler = new Handler();
+    private String fileName;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,9 +77,6 @@ public class ActivityServer extends AppCompatActivity {
         setContentView(R.layout.activity_server);
         infoIp = (TextView) findViewById(R.id.infoip);
         infoPort = (TextView) findViewById(R.id.infoport);
-       // msgServer = (TextView) findViewById(R.id.server_msg);
-      //  msgClient = (TextView) findViewById(R.id.client_msg);
-        container = (LinearLayout) findViewById(R.id.container);
 
         spUsers = (Spinner) findViewById(R.id.spusers);
         userList = new ArrayList<ChatClient>();
@@ -63,31 +89,66 @@ public class ActivityServer extends AppCompatActivity {
         btnSentTo.setOnClickListener(btnSentToOnClickListener);
 
         editTextSay = (EditText)findViewById(R.id.say);
+        record = (ToggleButton)findViewById(R.id.tg_record);
+
+
+        final LayoutInflater inflater = (LayoutInflater) getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+        child = inflater.inflate(R.layout.item_voice, null, false);
+
+        ViewGroup view = (ViewGroup) findViewById(android.R.id.content);
+
+        mAdapter = new MessageAdapter(App.context, mMessages);
+
+        mMessagesView = (RecyclerView) findViewById(R.id.messages);
+        mMessagesView.setLayoutManager(new LinearLayoutManager(ActivityServer.this));
+        mMessagesView.setAdapter(mAdapter);
 
 
         infoIp.setText(getIpAddress());
 
         ChatServerThread chatServerThread = new ChatServerThread();
         chatServerThread.start();
+
+        record.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(record.isChecked()== false) {
+                    stop(view);
+                }
+                if(record.isChecked()== true) {
+                    fileName = new SimpleDateFormat("yyyy-MM-ddHHmmssSSS'.mp3'").format(new Date());
+
+
+                    outputFile = Environment.getExternalStorageDirectory().
+                            getAbsolutePath() + "/"+fileName;
+
+                    myRecorder = new MediaRecorder();
+                    myRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+                    myRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+                    myRecorder.setAudioEncoder(MediaRecorder.OutputFormat.AMR_NB);
+                    myRecorder.setOutputFile(outputFile);
+
+                    start(view);
+                }
+            }
+        });
+
     }
 
     View.OnClickListener btnSentToOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             ChatClient client = (ChatClient)spUsers.getSelectedItem();
+
             if(client != null){
-                //String dummyMsg = "Dummy message from server.\n";
-                final LayoutInflater inflater = (LayoutInflater)getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
-                    final View child = inflater.inflate(R.layout.item_server, null, false);
-                    TextView txtServer = (TextView) child.findViewById(R.id.txt_cserver);
-                   // TextView txtClient = (TextView) child.findViewById(R.id.txt_client);
 
-                    client.chatThread.sendMsg(editTextSay.getText().toString());
-             //   msgLog += "-  "+ client.name +": " + editTextSay.getText().toString()+"\n";
-                txtServer.setText("me: " + editTextSay.getText().toString()+"\n");
+                client.chatThread.sendMsg(editTextSay.getText().toString());
+                mMessages.add(new Message.Builder(Message.TYPE_RIGHT)
+                        .username("").message("من : "+editTextSay.getText().toString()).build());
+                mAdapter.notifyItemInserted(mMessages.size() - 1);
+                scrollToBottom();
 
-                container.addView(child);
-                editTextSay.setText("");
+                    editTextSay.setText("");
 
 
             }else{
@@ -185,9 +246,9 @@ public class ActivityServer extends AppCompatActivity {
 
                 connectClient.name = n;
 ////
-              //  msgLog += connectClient.name + " متصل شد@" +
-               //         connectClient.socket.getInetAddress() +
-             //           ":" + connectClient.socket.getPort() + "\n";
+                //  msgLog += connectClient.name + " متصل شد@" +
+                //         connectClient.socket.getInetAddress() +
+                //           ":" + connectClient.socket.getPort() + "\n";
                 ActivityServer.this.runOnUiThread(new Runnable() {
 
                     @Override
@@ -201,7 +262,13 @@ public class ActivityServer extends AppCompatActivity {
                         msg.setText(connectClient.name + " متصل شد@" +
                                 connectClient.socket.getInetAddress() +
                                 ":" + connectClient.socket.getPort() + "\n");
-                        container.addView(child);
+
+                        mMessages.add(new Message.Builder(Message.TYPE_LOG)
+                                .username(connectClient.name).message(" متصل شد ").build());
+                        mAdapter.notifyItemInserted(mMessages.size() - 1);
+                        scrollToBottom();
+
+                        //container.addView(child);
                     }
                 });
 
@@ -212,31 +279,92 @@ public class ActivityServer extends AppCompatActivity {
 
                 while (true) {
                     if (dataInputStream.available() > 0) {
-                        final String newMsg = dataInputStream.readUTF();
+                        String charT = String.valueOf(dataInputStream.readChar());
 
+                        if (charT.equals("I")) {
+                            fileName = new SimpleDateFormat("yyyy-MM-ddHHmmssSSS'.mp3'").format(new Date());
+                            final String outputFile = Environment.getExternalStorageDirectory().
+                                    getAbsolutePath() + "/"+fileName;
+                            File path = new File(outputFile);
+                            long length = dataInputStream.readLong();
+                            DataOutputStream dataOutputStream2 = new DataOutputStream(new FileOutputStream(path));
 
-                     //   msgLog += n + ": " + newMsg;
-                        ActivityServer.this.runOnUiThread(new Runnable() {
+                            byte[] buffer = new byte[16384];
+                            boolean end= false;
+                            while (!end){
+                                dataOutputStream2.write(buffer, 0, dataInputStream.read(buffer, 0, buffer.length));
 
-                            @Override
-                            public void run() {
-                                final LayoutInflater inflater = (LayoutInflater)getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
-                                final View child = inflater.inflate(R.layout.item_client, null, false);
-                                //TextView txtServer = (TextView) child.findViewById(R.id.txt_cserver);
-                                 TextView txtClient = (TextView) child.findViewById(R.id.txt_client);
+                                if(buffer.length >= length ){
+                                    end = true;
+                                    dataOutputStream2.flush();
+                                    ActivityServer.this.runOnUiThread(new Runnable() {
 
-                                txtClient.setText(n + ": " + newMsg);
-                                container.addView(child);
+                                        @Override
+                                        public void run() {
+                                            final LayoutInflater inflater = (LayoutInflater) getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+                                            child = inflater.inflate(R.layout.item_voice, null, false);
+                                            mMessages.add(new Message.Builder(Message.TYPE_VOICE)
+                                                    .username("سرور").message(fileName).build());
+                                            mAdapter.notifyItemInserted(mMessages.size() - 1);
+                                            scrollToBottom();
+
+                                        }
+                                    });
+
+                                }
+
                             }
-                        });
 
-                        broadcastMsg("server$&*K@CHUUFWDWETKMYTK@@JHR"+n + ": " + newMsg);
+                        }
+                        if (charT.equals("T")) {
+                            final String newMsg = dataInputStream.readUTF();
+
+
+                            //   msgLog += n + ": " + newMsg;
+                            ActivityServer.this.runOnUiThread(new Runnable() {
+
+                                @Override
+                                public void run() {
+
+                                    mMessages.add(new Message.Builder(Message.TYPE_LEFT)
+                                            .username(n).message(n+": "+ newMsg).build());
+                                    mAdapter.notifyItemInserted(mMessages.size() - 1);
+                                    scrollToBottom();
+
+                                    // container.addView(child);
+                                }
+                            });
+                            broadcastMsg("server$&*K@CHUUFWDWETKMYTK@@JHR" +   newMsg);
+
+                        }
+
+
                     }
+                    if(msgToSend.toString().equals("voicemessage")){
+                        dataOutputStream.writeChar('I'); // as image,
+                        byte[] buf = new byte[16384];
+                        FileInputStream requestedfile = new FileInputStream(outputFile);
+                        dataOutputStream.writeLong(new File(outputFile).length());
 
-                    if(!msgToSend.equals("")){
-                        dataOutputStream.writeUTF(msgToSend);
-                        dataOutputStream.flush();
+                        while((requestedfile.read(buf)!=-1)){
+                            dataOutputStream.write(buf);
+
+                            dataOutputStream.flush();
+                        }
+
                         msgToSend = "";
+                        fileName = "";
+
+
+                    }else{
+                        if (!msgToSend.equals("")) {
+                            dataOutputStream.writeChar('T'); // as image,
+                            dataOutputStream.writeUTF(msgToSend);
+                            dataOutputStream.flush();
+                            msgToSend = "";
+                            fileName = "";
+
+                        }
                     }
 
                 }
@@ -272,7 +400,7 @@ public class ActivityServer extends AppCompatActivity {
                         Toast.makeText(ActivityServer.this,
                                 connectClient.name + " حذف شد.", Toast.LENGTH_LONG).show();
 
-                     //   msgLog += "-- " + connectClient.name + " خارج شد\n";
+                        //   msgLog += "-- " + connectClient.name + " خارج شد\n";
                         ActivityServer.this.runOnUiThread(new Runnable() {
 
                             @Override
@@ -282,7 +410,13 @@ public class ActivityServer extends AppCompatActivity {
                                 TextView msg = (TextView) child.findViewById(R.id.txt_msg);
 
                                 msg.setText("" + connectClient.name + " خارج شد\n");
-                                container.addView(child);
+                               // container.addView(child);
+
+                                mMessages.add(new Message.Builder(Message.TYPE_LOG)
+                                        .username(connectClient.name).message("خارج شد").build());
+                                mAdapter.notifyItemInserted(mMessages.size() - 1);
+                                scrollToBottom();
+
                             }
                         });
 
@@ -293,7 +427,8 @@ public class ActivityServer extends AppCompatActivity {
 
         }
 
-        private void sendMsg(String msg){
+        public void sendMsg(String msg){
+            Log.i("vvvvvvvv" , "3");
             msgToSend = msg;
         }
 
@@ -301,16 +436,17 @@ public class ActivityServer extends AppCompatActivity {
 
     private void broadcastMsg(String msg){
         for(int i=0; i<userList.size(); i++){
+            Log.i("vvvvvvvv" , "2");
             userList.get(i).chatThread.sendMsg(msg);
-         //   msgLog += "- send to " + userList.get(i).name + "\n";
-           msgLog += "\n";
+            //   msgLog += "- send to " + userList.get(i).name + "\n";
+            msgLog += "\n";
         }
 
         ActivityServer.this.runOnUiThread(new Runnable() {
 
             @Override
             public void run() {
-               // msgServer.setText(msgLog);
+                // msgServer.setText(msgLog);
             }
         });
     }
@@ -356,4 +492,93 @@ public class ActivityServer extends AppCompatActivity {
             return name + ": " + socket.getInetAddress().getHostAddress();
         }
     }
+    ////////////////////////
+
+    public void start(View view) {
+        try {
+            myRecorder.prepare();
+            myRecorder.start();
+        } catch (IllegalStateException e) {
+            // start:it is called before prepare()
+            // prepare: it is called after start() or before setOutputFormat()
+            e.printStackTrace();
+        } catch (IOException e) {
+            // prepare() fails
+            e.printStackTrace();
+        }
+
+        Toast.makeText(getApplicationContext(), "Start recording...",
+                Toast.LENGTH_SHORT).show();
+    }
+
+    public void stop(View view){
+        try {
+            myRecorder.stop();
+            myRecorder.release();
+            myRecorder  = null;
+
+            String d = "-";
+
+
+            Toast.makeText(getApplicationContext(), "Stop recording...",
+                    Toast.LENGTH_SHORT).show();
+
+
+        } catch (IllegalStateException e) {
+            //  it is called before start()
+            e.printStackTrace();
+        } catch (RuntimeException e) {
+            // no valid audio/video data has been received
+            e.printStackTrace();
+        }
+
+
+        AlertDialog.Builder builder1 = new AlertDialog.Builder(ActivityServer.this);
+        builder1.setMessage("صدا ارسال شود؟");
+        builder1.setCancelable(true);
+
+        builder1.setPositiveButton(
+                "بله",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                        ChatClient client = (ChatClient)spUsers.getSelectedItem();
+                       if(client != null) {
+
+                           client.chatThread.sendMsg("voicemessage");
+                           ActivityServer.this.runOnUiThread(new Runnable() {
+
+                               @Override
+                               public void run() {
+                                   mMessages.add(new Message.Builder(Message.TYPE_VOICE)
+                                           .username("me: ").message(fileName).build());
+                                   mAdapter.notifyItemInserted(mMessages.size() - 1);
+                                   scrollToBottom();
+
+                               }
+                           });
+
+                       }
+
+                            dialog.cancel();
+                    }
+                });
+
+        builder1.setNegativeButton(
+                "خیر",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        AlertDialog alert11 = builder1.create();
+        alert11.show();
+
+    }
+
+    private void scrollToBottom() {
+        mMessagesView.scrollToPosition(mAdapter.getItemCount() - 1);
+    }
+
 }

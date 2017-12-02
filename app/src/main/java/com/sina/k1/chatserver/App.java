@@ -98,7 +98,7 @@ public class App extends Application {
 
     public static String numberformatStr(String input){
 
-        return NumberFormat.getNumberInstance(Locale.US).format(Long.parseLong(input));
+        return NumberFormat.getNumberInstance(Locale.US).format(Short.parseShort(input));
 
     }
 

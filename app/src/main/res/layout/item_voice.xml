@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/ll_server"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="5dp"
+    android:layout_marginLeft="15dp"
+    android:layout_marginRight="15dp"
+    android:layout_marginTop="5dp">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="65dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:background="@drawable/gray_border_wo_padding"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingLeft="4dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/play"
+                android:layout_width="70dp"
+                android:layout_height="30dp"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/btn_online"
+                android:gravity="center"
+                android:text="play"
+                android:textColor="#fff"
+                android:textSize="11sp" />
+
+            <FrameLayout
+                android:id="@+id/seekbar_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_toRightOf="@id/play"
+                android:paddingBottom="5dp"
+                android:paddingRight="5dp"
+                android:paddingTop="5dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="right|top"
+                    android:orientation="horizontal"
+                    android:paddingBottom="5dp"
+                    android:paddingRight="10dp"
+                    android:paddingTop="5dp">
+
+                    <TextView
+                        android:id="@+id/total_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ellipsize="end"
+                        android:inputType="text"
+                        android:text="00:00"
+                        android:textColor="@android:color/darker_gray"
+                        android:textSize="11sp" />
+                </LinearLayout>
+            </FrameLayout>
+
+            <SeekBar
+                android:id="@+id/media_seekbar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_gravity="center_vertical"
+                android:layout_toEndOf="@+id/play"
+                android:layout_toRightOf="@+id/play" />
+        </RelativeLayout>
+    </LinearLayout>
+
+</RelativeLayout>
